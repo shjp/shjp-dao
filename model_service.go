@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-pg/pg"
+	"github.com/gorilla/mux"
 	core "github.com/shjp/shjp-core"
 )
 
@@ -53,7 +54,18 @@ func (s *ModelService) HandleGetAll(w http.ResponseWriter, r *http.Request) {
 
 // HandleGetOne handles get one request
 func (s *ModelService) HandleGetOne(w http.ResponseWriter, r *http.Request) {
-
+	id := mux.Vars(r)["id"]
+	model, err := s.dao.GetOne(id)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf("Error getting '%s' one model: %s", s.modelName, err))
+		return
+	}
+	bytes, err := json.Marshal(model)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf("Error serializing '%s' one model: %s", s.modelName, err))
+		return
+	}
+	fmt.Fprintf(w, string(bytes))
 }
 
 // HandleUpsert handles upsert request

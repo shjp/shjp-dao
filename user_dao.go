@@ -33,6 +33,18 @@ func (o *userDAO) GetAll() ([]core.Model, error) {
 	return result, nil
 }
 
+// GetOne returns one user
+func (o *userDAO) GetOne(id string) (core.Model, error) {
+	var u user
+	var err error
+	u.ID = id
+	if err := o.DB.Model(&u).First(); err != nil {
+		return nil, err
+	}
+
+	return &u, err
+}
+
 // Upsert upserts a user
 func (o *userDAO) Upsert(m core.Model) error {
 	return o.DB.Insert(m)

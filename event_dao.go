@@ -33,6 +33,18 @@ func (o *eventDAO) GetAll() ([]core.Model, error) {
 	return result, nil
 }
 
+// GetOne returns one event
+func (o *eventDAO) GetOne(id string) (core.Model, error) {
+	var e event
+	var err error
+	e.ID = id
+	if err := o.DB.Model(&e).First(); err != nil {
+		return nil, err
+	}
+
+	return &e, err
+}
+
 // Upsert upserts an event
 func (o *eventDAO) Upsert(m core.Model) error {
 	return o.DB.Insert(m)

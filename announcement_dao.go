@@ -33,6 +33,18 @@ func (o *announcementDAO) GetAll() ([]core.Model, error) {
 	return result, nil
 }
 
+// GetOne returns one announcement
+func (o *announcementDAO) GetOne(id string) (core.Model, error) {
+	var a announcement
+	var err error
+	a.ID = id
+	if err := o.DB.Model(&a).First(); err != nil {
+		return nil, err
+	}
+
+	return &a, err
+}
+
 // Upsert upserts an announcement
 func (o *announcementDAO) Upsert(m core.Model) error {
 	return o.DB.Insert(m)
