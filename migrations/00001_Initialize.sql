@@ -18,13 +18,14 @@ CREATE TABLE roles (
 CREATE TABLE users (
   id UUID PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
+  email TEXT,
   baptismal_name TEXT,
   birthday TIMESTAMP,
-  feast_day TIMESTAMP,
+  feastday TIMESTAMP,
   created TIMESTAMP NOT NULL DEFAULT now(),
   last_active TIMESTAMP,
   account_type TEXT,
-  account_hash TEXT
+  account_secret TEXT
 );
 
 CREATE TABLE events (
