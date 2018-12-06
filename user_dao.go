@@ -2,6 +2,8 @@ package dao
 
 import (
 	"github.com/go-pg/pg"
+	"github.com/pkg/errors"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/shjp/shjp-core"
 	"github.com/shjp/shjp-core/model"
@@ -47,5 +49,29 @@ func (o *userDAO) GetOne(id string) (core.Model, error) {
 
 // Upsert upserts a user
 func (o *userDAO) Upsert(m core.Model) error {
-	return o.DB.Insert(m)
+	u := m.(*core.User)
+	if err := populateAccountSecret(u); err != nil {
+		return errors.Wrap(err, "Error while performing transformation before upsert")
+	}
+	return o.DB.Insert(u)
+}
+
+// populateAccountSecret populates the account secret from the given
+// user's secret seed and account type
+func populateAccountSecret(u *core.User) error {
+	accountSecret, err := getEmailAccountSecret(*u.Password)
+	if err != nil {
+		return err
+	}
+	u.AccountSecret = &accountSecret
+	return nil
+}
+
+// getEmailAccountSecret produces account secret for email account from password
+func getEmailAccountSecret(password string) (string, error) {
+	hashByte, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", errors.Wrap(err, "failed generating hash")
+	}
+	return string(hashByte), nil
 }
