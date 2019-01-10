@@ -68,14 +68,18 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.Path("/groups").HandlerFunc(groupService.HandleGetAll)
-	r.Path("/groups/{id}").HandlerFunc(groupService.HandleGetOne)
-	r.Path("/users").HandlerFunc(userService.HandleGetAll)
-	r.Path("/users/{id}").HandlerFunc(userService.HandleGetOne)
 	r.Path("/announcements").HandlerFunc(announcementService.HandleGetAll)
+	r.Path("/announcements/search").HandlerFunc(announcementService.HandleSearch)
 	r.Path("/announcements/{id}").HandlerFunc(announcementService.HandleGetOne)
 	r.Path("/events").HandlerFunc(eventService.HandleGetAll)
+	r.Path("/events/search").HandlerFunc(eventService.HandleSearch)
 	r.Path("/events/{id}").HandlerFunc(eventService.HandleGetOne)
+	r.Path("/groups").HandlerFunc(groupService.HandleGetAll)
+	r.Path("/groups/search").HandlerFunc(groupService.HandleSearch)
+	r.Path("/groups/{id}").HandlerFunc(groupService.HandleGetOne)
+	r.Path("/users").HandlerFunc(userService.HandleGetAll)
+	r.Path("/users/search").HandlerFunc(userService.HandleSearch)
+	r.Path("/users/{id}").HandlerFunc(userService.HandleGetOne)
 
 	/**
 	 * Subscrbies for mutation requests

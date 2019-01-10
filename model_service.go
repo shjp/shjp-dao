@@ -3,6 +3,7 @@ package dao
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -63,6 +64,26 @@ func (s *ModelService) HandleGetOne(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(model)
 	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error serializing '%s' one model: %s", s.modelName, err))
+		return
+	}
+	fmt.Fprintf(w, string(bytes))
+}
+
+// HandleSearch handles the request to get all models meeting the criteria
+func (s *ModelService) HandleSearch(w http.ResponseWriter, r *http.Request) {
+	payload, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf("Error reading body for HandleFind"))
+		return
+	}
+	models, err := s.dao.Search(payload)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf("Error finding '%s' models: %s", s.modelName, err))
+		return
+	}
+	bytes, err := json.Marshal(models)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf("Error serializing '%s' models: %s", s.modelName, err))
 		return
 	}
 	fmt.Fprintf(w, string(bytes))

@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"encoding/json"
+
 	"github.com/go-pg/pg"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
@@ -45,6 +47,52 @@ func (o *userDAO) GetOne(id string) (core.Model, error) {
 	}
 
 	return &u, err
+}
+
+// Search finds all users meeting the criteria given by the payload
+func (o *userDAO) Search(payload []byte) ([]core.Model, error) {
+	var params user
+	if err := json.Unmarshal(payload, &params); err != nil {
+		return nil, errors.Wrap(err, "Error deserializing payload")
+	}
+
+	us := make([]*user, 0)
+
+	query := o.DB.Model(&us)
+
+	if params.ID != "" {
+		query = query.Where("id = ?", params.ID)
+	}
+
+	if params.Name != nil {
+		query = query.Where("name ilike ?", "%"+*params.Name+"%")
+	}
+
+	if params.Email != nil {
+		query = query.Where("email = ?", *params.Email)
+	}
+
+	if params.Password != nil {
+		if err := populateAccountSecret(&params.User.User); err != nil {
+			return nil, errors.Wrap(err, "Error populating account secret")
+		}
+		query = query.Where("account_secret = ?", *params.AccountSecret)
+	}
+
+	if params.AccountType != nil {
+		query = query.Where("account_type = ?", *params.AccountType)
+	}
+
+	if err := query.Select(); err != nil {
+		return nil, err
+	}
+
+	result := make([]core.Model, len(us))
+	for i, u := range us {
+		result[i] = core.Model(u)
+	}
+
+	return result, nil
 }
 
 // Upsert upserts a user
