@@ -1,4 +1,4 @@
-package dao
+package postgres
 
 import (
 	"log"

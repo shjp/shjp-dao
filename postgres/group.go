@@ -1,4 +1,4 @@
-package dao
+package postgres
 
 import (
 	"encoding/json"
@@ -10,27 +10,27 @@ import (
 	"github.com/shjp/shjp-core/model"
 )
 
-type groupDAO struct {
-	DB *pg.DB
+// GroupQueryStrategy implements QueryStrategy for groups
+type GroupQueryStrategy struct {
+	*pg.DB
 }
 
 type group struct {
 	model.Group
 
-	tableName struct{} `sql:"groups"`
+	tableName struct{} `sql:"select:groups_full"`
+}
+
+// ModelName outputs this model's name
+func (s *GroupQueryStrategy) ModelName() string {
+	return "group"
 }
 
 // GetAll returns all groups
-func (o *groupDAO) GetAll() ([]core.Model, error) {
+func (s *GroupQueryStrategy) GetAll() ([]core.Model, error) {
 	groups := make([]*group, 0)
 
-	err := o.DB.Model(&groups).
-		ColumnExpr(`"group".*`).
-		ColumnExpr("COALESCE(json_agg(users) FILTER (WHERE users.id IS NOT NULL), '[]') AS members").
-		Join(`LEFT JOIN groups_users AS gu ON gu.group_id = "group".id`).
-		Join("LEFT JOIN users ON users.id = gu.user_id").
-		Group("group.id").
-		Select()
+	err := s.DB.Model(&groups).Select()
 	if err != nil {
 		return nil, err
 	}
@@ -44,18 +44,10 @@ func (o *groupDAO) GetAll() ([]core.Model, error) {
 }
 
 // GetOne returns one group
-func (o *groupDAO) GetOne(id string) (core.Model, error) {
+func (s *GroupQueryStrategy) GetOne(id string) (core.Model, error) {
 	var g group
 	g.ID = id
-	err := o.DB.Model(&g).
-		ColumnExpr(`"group".*`).
-		ColumnExpr("COALESCE(json_agg(users) FILTER (WHERE users.id IS NOT NULL), '[]') AS members").
-		Join(`LEFT JOIN groups_users AS gu ON gu.group_id = "group".id`).
-		Join("LEFT JOIN users ON users.id = gu.user_id").
-		Where(`"group".id = ?`, id).
-		Group("group.id").
-		First()
-	if err != nil {
+	if err := s.DB.Model(&g).First(); err != nil {
 		return nil, err
 	}
 
@@ -63,7 +55,7 @@ func (o *groupDAO) GetOne(id string) (core.Model, error) {
 }
 
 // Search finds all group meeting the criteria given by the payload
-func (o *groupDAO) Search(payload []byte) ([]core.Model, error) {
+func (s *GroupQueryStrategy) Search(payload []byte) ([]core.Model, error) {
 	var params group
 	if err := json.Unmarshal(payload, &params); err != nil {
 		return nil, errors.Wrap(err, "Error deserializing payload")
@@ -71,7 +63,7 @@ func (o *groupDAO) Search(payload []byte) ([]core.Model, error) {
 
 	gs := make([]*group, 0)
 
-	query := o.DB.Model(&gs)
+	query := s.DB.Model(&gs)
 
 	if params.ID != "" {
 		query = query.Where("id = ?", params.ID)
@@ -94,8 +86,8 @@ func (o *groupDAO) Search(payload []byte) ([]core.Model, error) {
 }
 
 // Upsert upserts a group
-func (o *groupDAO) Upsert(m core.Model) error {
-	_, err := o.DB.Model(m).
+func (s *GroupQueryStrategy) Upsert(m core.Model) error {
+	_, err := s.DB.Model(m).
 		OnConflict("(id) DO UPDATE").
 		Set(`(
 			name,

@@ -1,17 +1,17 @@
-package dao
+package postgres
 
 import (
 	"encoding/json"
 
 	"github.com/go-pg/pg"
 	"github.com/pkg/errors"
-
-	"github.com/shjp/shjp-core"
+	core "github.com/shjp/shjp-core"
 	"github.com/shjp/shjp-core/model"
 )
 
-type eventDAO struct {
-	DB *pg.DB
+// EventQueryStrategy implements QueryStrategy for events
+type EventQueryStrategy struct {
+	*pg.DB
 }
 
 type event struct {
@@ -20,11 +20,16 @@ type event struct {
 	tableName struct{} `sql:"select:events_full"`
 }
 
+// ModelName outputs this model's name
+func (s *EventQueryStrategy) ModelName() string {
+	return "event"
+}
+
 // GetAll returns all events
-func (o *eventDAO) GetAll() ([]core.Model, error) {
+func (s *EventQueryStrategy) GetAll() ([]core.Model, error) {
 	events := make([]*event, 0)
 
-	if err := o.DB.Model(&events).Select(); err != nil {
+	if err := s.DB.Model(&events).Select(); err != nil {
 		return nil, err
 	}
 
@@ -37,19 +42,18 @@ func (o *eventDAO) GetAll() ([]core.Model, error) {
 }
 
 // GetOne returns one event
-func (o *eventDAO) GetOne(id string) (core.Model, error) {
+func (s *EventQueryStrategy) GetOne(id string) (core.Model, error) {
 	var e event
-	var err error
 	e.ID = id
-	if err := o.DB.Model(&e).First(); err != nil {
+	if err := s.DB.Model(&e).First(); err != nil {
 		return nil, err
 	}
 
-	return &e, err
+	return &e, nil
 }
 
 // Search finds all events meeting the criteria given by the payload
-func (o *eventDAO) Search(payload []byte) ([]core.Model, error) {
+func (s *EventQueryStrategy) Search(payload []byte) ([]core.Model, error) {
 	var params event
 	if err := json.Unmarshal(payload, &params); err != nil {
 		return nil, errors.Wrap(err, "Error deserializing payload")
@@ -57,7 +61,7 @@ func (o *eventDAO) Search(payload []byte) ([]core.Model, error) {
 
 	es := make([]*event, 0)
 
-	query := o.DB.Model(&es)
+	query := s.DB.Model(&es)
 
 	if params.ID != "" {
 		query = query.Where("id = ?", params.ID)
@@ -84,6 +88,25 @@ func (o *eventDAO) Search(payload []byte) ([]core.Model, error) {
 }
 
 // Upsert upserts an event
-func (o *eventDAO) Upsert(m core.Model) error {
-	return o.DB.Insert(m)
+func (s *EventQueryStrategy) Upsert(m core.Model) error {
+	_, err := s.DB.Model(m).
+		OnConflict("(id) DO UPDATE").
+		Set(`(
+			name,
+			length,
+			deadline,
+			allow_maybe,
+			description,
+			location,
+			location_description
+		) = (
+			?name,
+			?length,
+			?deadline,
+			?allow_maybe,
+			?description,
+			?location,
+			?location_description)`).
+		Insert(m)
+	return err
 }

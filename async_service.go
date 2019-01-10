@@ -35,7 +35,7 @@ func NewAsyncService(queueHost, queueUser, queueExchange string, svcs ...*ModelS
 
 	services := make(map[string]*ModelService)
 	for _, service := range svcs {
-		services[service.modelName] = service
+		services[service.ModelName()] = service
 	}
 
 	return &AsyncService{
@@ -101,18 +101,3 @@ func (s *AsyncService) handle(msg *core.Message) {
 func (s *AsyncService) postProcess() {
 
 }
-
-/*func (s *AsyncService) chooseModelService(modelType string) (*Model, error) {
-	switch modelType {
-	case "announcement":
-		return s.announcementService, nil
-	case "event":
-		return s.eventService, nil
-	case "group":
-		return s.groupService, nil
-	case "user":
-		return s.userService, nil
-	default:
-		return nil, fmt.Errorf("Unrecognized model service type: %s", modelType)
-	}
-}*/

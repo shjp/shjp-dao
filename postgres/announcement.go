@@ -1,17 +1,17 @@
-package dao
+package postgres
 
 import (
 	"encoding/json"
 
 	"github.com/go-pg/pg"
 	"github.com/pkg/errors"
-
-	"github.com/shjp/shjp-core"
+	core "github.com/shjp/shjp-core"
 	"github.com/shjp/shjp-core/model"
 )
 
-type announcementDAO struct {
-	DB *pg.DB
+// AnnouncementQueryStrategy implements QueryStrategy for announcements
+type AnnouncementQueryStrategy struct {
+	*pg.DB
 }
 
 type announcement struct {
@@ -20,11 +20,16 @@ type announcement struct {
 	tableName struct{} `sql:"select:announcements_full"`
 }
 
+// ModelName outputs this model's name
+func (s *AnnouncementQueryStrategy) ModelName() string {
+	return "announcement"
+}
+
 // GetAll returns all announcements
-func (o *announcementDAO) GetAll() ([]core.Model, error) {
+func (s *AnnouncementQueryStrategy) GetAll() ([]core.Model, error) {
 	as := make([]*announcement, 0)
 
-	if err := o.DB.Model(&as).Select(); err != nil {
+	if err := s.DB.Model(&as).Select(); err != nil {
 		return nil, err
 	}
 
@@ -37,19 +42,18 @@ func (o *announcementDAO) GetAll() ([]core.Model, error) {
 }
 
 // GetOne returns one announcement
-func (o *announcementDAO) GetOne(id string) (core.Model, error) {
+func (s *AnnouncementQueryStrategy) GetOne(id string) (core.Model, error) {
 	var a announcement
-	var err error
 	a.ID = id
-	if err := o.DB.Model(&a).First(); err != nil {
+	if err := s.DB.Model(&a).First(); err != nil {
 		return nil, err
 	}
 
-	return &a, err
+	return &a, nil
 }
 
 // Search finds all announcements meeting the criteria given by the payload
-func (o *announcementDAO) Search(payload []byte) ([]core.Model, error) {
+func (s *AnnouncementQueryStrategy) Search(payload []byte) ([]core.Model, error) {
 	var params announcement
 	if err := json.Unmarshal(payload, &params); err != nil {
 		return nil, errors.Wrap(err, "Error deserializing payload")
@@ -57,7 +61,7 @@ func (o *announcementDAO) Search(payload []byte) ([]core.Model, error) {
 
 	as := make([]*announcement, 0)
 
-	query := o.DB.Model(&as)
+	query := s.DB.Model(&as)
 
 	if params.ID != "" {
 		query = query.Where("id = ?", params.ID)
@@ -84,6 +88,15 @@ func (o *announcementDAO) Search(payload []byte) ([]core.Model, error) {
 }
 
 // Upsert upserts an announcement
-func (o *announcementDAO) Upsert(m core.Model) error {
-	return o.DB.Insert(m)
+func (s *AnnouncementQueryStrategy) Upsert(m core.Model) error {
+	_, err := s.DB.Model(m).
+		OnConflict("(id) DO UPDATE").
+		Set(`(
+			name,
+			content
+		) = (
+			?name,
+			?content)`).
+		Insert(m)
+	return err
 }

@@ -1,4 +1,4 @@
-package dao
+package postgres
 
 import (
 	"encoding/json"
@@ -11,8 +11,9 @@ import (
 	"github.com/shjp/shjp-core/model"
 )
 
-type userDAO struct {
-	DB *pg.DB
+// UserQueryStrategy implements QueryStrategy for users
+type UserQueryStrategy struct {
+	*pg.DB
 }
 
 type user struct {
@@ -21,11 +22,16 @@ type user struct {
 	tableName struct{} `sql:"select:users_full"`
 }
 
+// ModelName outputs this model's name
+func (s *UserQueryStrategy) ModelName() string {
+	return "user"
+}
+
 // GetAll returns all users
-func (o *userDAO) GetAll() ([]core.Model, error) {
+func (s *UserQueryStrategy) GetAll() ([]core.Model, error) {
 	users := make([]*user, 0)
 
-	if err := o.DB.Model(&users).Select(); err != nil {
+	if err := s.DB.Model(&users).Select(); err != nil {
 		return nil, err
 	}
 
@@ -38,19 +44,18 @@ func (o *userDAO) GetAll() ([]core.Model, error) {
 }
 
 // GetOne returns one user
-func (o *userDAO) GetOne(id string) (core.Model, error) {
+func (s *UserQueryStrategy) GetOne(id string) (core.Model, error) {
 	var u user
-	var err error
 	u.ID = id
-	if err := o.DB.Model(&u).First(); err != nil {
+	if err := s.DB.Model(&u).First(); err != nil {
 		return nil, err
 	}
 
-	return &u, err
+	return &u, nil
 }
 
 // Search finds all users meeting the criteria given by the payload
-func (o *userDAO) Search(payload []byte) ([]core.Model, error) {
+func (s *UserQueryStrategy) Search(payload []byte) ([]core.Model, error) {
 	var params user
 	if err := json.Unmarshal(payload, &params); err != nil {
 		return nil, errors.Wrap(err, "Error deserializing payload")
@@ -58,7 +63,7 @@ func (o *userDAO) Search(payload []byte) ([]core.Model, error) {
 
 	us := make([]*user, 0)
 
-	query := o.DB.Model(&us)
+	query := s.DB.Model(&us)
 
 	if params.ID != "" {
 		query = query.Where("id = ?", params.ID)
@@ -96,12 +101,33 @@ func (o *userDAO) Search(payload []byte) ([]core.Model, error) {
 }
 
 // Upsert upserts a user
-func (o *userDAO) Upsert(m core.Model) error {
+func (s *UserQueryStrategy) Upsert(m core.Model) error {
 	u := m.(*core.User)
 	if err := populateAccountSecret(u); err != nil {
 		return errors.Wrap(err, "Error while performing transformation before upsert")
 	}
-	return o.DB.Insert(u)
+	_, err := s.DB.Model(m).
+		OnConflict("(id) DO UPDATE").
+		Set(`(
+			name,
+			email,
+			baptismal_name,
+			birthday,
+			feastday,
+			last_active,
+			account_type,
+			account_secret
+		) = (
+			?name,
+			?email,
+			?baptismal_name,
+			?birthday,
+			?feastday,
+			?last_active,
+			?account_type,
+			?account_secret)`).
+		Insert(u)
+	return err
 }
 
 // populateAccountSecret populates the account secret from the given

@@ -10,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/shjp/shjp-dao"
+	"github.com/shjp/shjp-dao/postgres"
 )
 
 func main() {
@@ -28,13 +29,12 @@ func main() {
 	queueExchange := envVars["QUEUE_EXCHANGE"]
 
 	log.Print("Initializing DB client...")
-	db := dao.Init(&pg.Options{
+	db := postgres.Init(&pg.Options{
 		Addr:     addr,
 		Password: password,
 		User:     user,
 		Database: dbName,
 	})
-	log.Println(" complete")
 
 	// Log queries
 	db.OnQueryProcessed(func(event *pg.QueryProcessedEvent) {
@@ -50,22 +50,10 @@ func main() {
 	 *	REST endpoints are used for query requests
 	 */
 
-	groupService, err := dao.NewModelService("group", db)
-	if err != nil {
-		panic(err)
-	}
-	userService, err := dao.NewModelService("user", db)
-	if err != nil {
-		panic(err)
-	}
-	announcementService, err := dao.NewModelService("announcement", db)
-	if err != nil {
-		panic(err)
-	}
-	eventService, err := dao.NewModelService("event", db)
-	if err != nil {
-		panic(err)
-	}
+	announcementService := dao.NewModelService(&postgres.AnnouncementQueryStrategy{DB: db})
+	eventService := dao.NewModelService(&postgres.EventQueryStrategy{DB: db})
+	groupService := dao.NewModelService(&postgres.GroupQueryStrategy{DB: db})
+	userService := dao.NewModelService(&postgres.UserQueryStrategy{DB: db})
 
 	r := mux.NewRouter()
 	r.Path("/announcements").HandlerFunc(announcementService.HandleGetAll)

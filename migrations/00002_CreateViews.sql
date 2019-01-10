@@ -38,8 +38,19 @@ CREATE VIEW events_full AS
   FROM events
   INNER JOIN users ON events.creator = users.id;
 
+-- select groups
+CREATE VIEW groups_full AS
+  SELECT
+    groups.*,
+    COALESCE(json_agg(users) FILTER (WHERE users.id IS NOT NULL), '[]') AS members
+  FROM groups
+  LEFT JOIN groups_users AS gu ON gu.group_id = groups.id
+  LEFT JOIN users ON users.id = gu.user_id
+  GROUP BY groups.id;
+
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back.
+DROP VIEW groups_full;
 DROP VIEW events_full;
 DROP VIEW announcements_full;
 DROP VIEW users_full;
