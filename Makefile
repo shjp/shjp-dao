@@ -41,3 +41,6 @@ server:
 
 server_win:
 	@go run cmd/server/main.go --host=`docker-machine.exe ip`
+
+local:
+	cd cmd/server && go run main.go

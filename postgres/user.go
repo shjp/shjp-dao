@@ -77,13 +77,6 @@ func (s *UserQueryStrategy) Search(payload []byte) ([]core.Model, error) {
 		query = query.Where("email = ?", *params.Email)
 	}
 
-	if params.Password != nil {
-		if err := populateAccountSecret(&params.User.User); err != nil {
-			return nil, errors.Wrap(err, "Error populating account secret")
-		}
-		query = query.Where("account_secret = ?", *params.AccountSecret)
-	}
-
 	if params.AccountType != nil {
 		query = query.Where("account_type = ?", *params.AccountType)
 	}
@@ -92,9 +85,15 @@ func (s *UserQueryStrategy) Search(payload []byte) ([]core.Model, error) {
 		return nil, err
 	}
 
-	result := make([]core.Model, len(us))
-	for i, u := range us {
-		result[i] = core.Model(u)
+	result := make([]core.Model, 0)
+
+	for _, u := range us {
+		if params.Password != nil {
+			if err := bcrypt.CompareHashAndPassword([]byte(*u.AccountSecret), []byte(*params.Password)); err != nil {
+				continue
+			}
+		}
+		result = append(result, core.Model(u))
 	}
 
 	return result, nil

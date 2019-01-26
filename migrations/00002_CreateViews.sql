@@ -17,9 +17,9 @@ CREATE VIEW users_full AS
   )
   SELECT
     users.*,
-    json_agg(user_groups) AS groups
-  FROM user_groups
-  INNER JOIN users ON users.id = user_groups.user_id
+    COALESCE(json_agg(user_groups) FILTER (WHERE user_groups IS NOT NULL)) AS groups
+  FROM users
+  LEFT JOIN user_groups ON users.id = user_groups.user_id
   GROUP BY users.id;
 
 -- select announcements
