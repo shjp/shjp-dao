@@ -47,7 +47,7 @@ func (s *UserQueryStrategy) GetAll() ([]core.Model, error) {
 func (s *UserQueryStrategy) GetOne(id string) (core.Model, error) {
 	var u user
 	u.ID = id
-	if err := s.DB.Model(&u).First(); err != nil {
+	if err := s.DB.Model(&u).WherePK().First(); err != nil {
 		return nil, err
 	}
 

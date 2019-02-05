@@ -45,7 +45,7 @@ func (s *EventQueryStrategy) GetAll() ([]core.Model, error) {
 func (s *EventQueryStrategy) GetOne(id string) (core.Model, error) {
 	var e event
 	e.ID = id
-	if err := s.DB.Model(&e).First(); err != nil {
+	if err := s.DB.Model(&e).WherePK().First(); err != nil {
 		return nil, err
 	}
 

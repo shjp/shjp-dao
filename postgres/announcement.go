@@ -45,7 +45,7 @@ func (s *AnnouncementQueryStrategy) GetAll() ([]core.Model, error) {
 func (s *AnnouncementQueryStrategy) GetOne(id string) (core.Model, error) {
 	var a announcement
 	a.ID = id
-	if err := s.DB.Model(&a).First(); err != nil {
+	if err := s.DB.Model(&a).WherePK().First(); err != nil {
 		return nil, err
 	}
 
