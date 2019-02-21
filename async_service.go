@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/pkg/errors"
 	core "github.com/shjp/shjp-core"
 	"github.com/shjp/shjp-queue"
 )
@@ -56,30 +57,43 @@ func (s *AsyncService) handle(msg *core.Message) {
 		log.Println("Ignoring non-request intent message")
 		return
 	}
-	if msg.Type != core.ModelType {
-		log.Println("Ignoring non-model type message")
+	var messageHandler func(*core.Message) error
+	switch msg.Type {
+	case core.ModelType:
+		messageHandler = s.handleModelMessage
+	case core.RelationshipType:
+		messageHandler = s.handleRelationshipMessage
+	default:
+		log.Println("Ignoring messages with other than model and relationship types")
 		return
 	}
+
+	if err := messageHandler(msg); err != nil {
+		log.Println(err)
+		return
+	}
+
+	s.postProcess()
+}
+
+func (s *AsyncService) handleModelMessage(msg *core.Message) error {
 	ms, ok := s.services[msg.Subtype]
 	if !ok {
-		log.Println("Cannot handle model message with unknown subtype: ", msg.Subtype)
 		// TODO: Send error message to the queue
 		//s.producer.Publish()
-		return
+		return fmt.Errorf("Cannot handle model message with unknown subtype: %s", msg.Subtype)
 	}
 
 	entity, err := msg.ExtractEntity()
 	if err != nil {
-		log.Println("Cannot extract entity from message:", err)
 		// TODO: send error message
-		return
+		return errors.Wrap(err, "Cannot extract entity from message")
 	}
 
 	m, ok := entity.(core.Model)
 	if !ok {
-		log.Println("Cannot convert the entity to model")
 		// TODO: send error message
-		return
+		return errors.Wrap(err, "Cannot convert the entity to model")
 	}
 
 	switch msg.OperationType {
@@ -90,12 +104,47 @@ func (s *AsyncService) handle(msg *core.Message) {
 	}
 
 	if err != nil {
-		log.Println("Operation not successful:", err)
 		// TODO: send error message
-		return
+		return errors.Wrap(err, "Operation not successful")
 	}
 
-	s.postProcess()
+	return nil
+}
+
+func (s *AsyncService) handleRelationshipMessage(msg *core.Message) error {
+	var serviceName string
+	switch msg.Subtype {
+	case "group_membership":
+		serviceName = "group"
+	default:
+		return fmt.Errorf("Cannot handle relationship message with unknown subtype: %s", msg.Subtype)
+	}
+
+	ms, ok := s.services[serviceName]
+	if !ok {
+		// TODO: Send error message to the queue
+		return fmt.Errorf("Cannot handle relationship message with unknown service name: %s", serviceName)
+	}
+
+	entity, err := msg.ExtractEntity()
+	if err != nil {
+		// TODO: send error message
+		return errors.Wrap(err, "Cannot extract entity from message")
+	}
+
+	switch msg.OperationType {
+	case core.UpsertOperation:
+		err = ms.HandleUpsertRelationship(entity, msg.Subtype)
+	default:
+		err = fmt.Errorf("Unrecognized operation type %s", msg.OperationType)
+	}
+
+	if err != nil {
+		// TODO: send error message
+		return errors.Wrap(err, "Operation not successful")
+	}
+
+	return nil
 }
 
 func (s *AsyncService) postProcess() {

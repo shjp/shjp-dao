@@ -14,6 +14,7 @@ CREATE VIEW users_full AS
     INNER JOIN users ON users.id = gu.user_id
     INNER JOIN groups ON groups.id = gu.group_id
     INNER JOIN roles ON roles.id = gu.role_id
+    WHERE gu.status = 'accepted'
   )
   SELECT
     users.*,
@@ -42,10 +43,18 @@ CREATE VIEW events_full AS
 CREATE VIEW groups_full AS
   SELECT
     groups.*,
-    COALESCE(json_agg(users) FILTER (WHERE users.id IS NOT NULL), '[]') AS members
+    COALESCE(json_agg(
+      to_jsonb(users)
+      || jsonb_build_object(
+        'role_name', roles.name,
+        'privilege', roles.privilege)
+      || jsonb_build_object(
+        'status', gu.status)
+    ) FILTER (WHERE users.id IS NOT NULL), '[]') AS members
   FROM groups
   LEFT JOIN groups_users AS gu ON gu.group_id = groups.id
   LEFT JOIN users ON users.id = gu.user_id
+  LEFT JOIN roles ON roles.id = gu.role_id
   GROUP BY groups.id;
 
 -- +goose Down

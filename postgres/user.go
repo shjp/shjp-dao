@@ -129,6 +129,11 @@ func (s *UserQueryStrategy) Upsert(m core.Model) error {
 	return err
 }
 
+// UpsertRelationship upserts a user relationship
+func (s *UserQueryStrategy) UpsertRelationship(e core.Entity, relation string) error {
+	return nil
+}
+
 // populateAccountSecret populates the account secret from the given
 // user's secret seed and account type
 func populateAccountSecret(u *core.User) error {

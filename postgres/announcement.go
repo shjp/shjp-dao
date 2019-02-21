@@ -100,3 +100,8 @@ func (s *AnnouncementQueryStrategy) Upsert(m core.Model) error {
 		Insert(m)
 	return err
 }
+
+// UpsertRelationship upserts an announcement relationship
+func (s *AnnouncementQueryStrategy) UpsertRelationship(e core.Entity, relation string) error {
+	return nil
+}

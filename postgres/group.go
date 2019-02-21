@@ -2,8 +2,10 @@ package postgres
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
 	"github.com/pkg/errors"
 
 	"github.com/shjp/shjp-core"
@@ -19,6 +21,12 @@ type group struct {
 	model.Group
 
 	tableName struct{} `sql:"select:groups_full"`
+}
+
+type groupMembership struct {
+	core.GroupMembership
+
+	tableName struct{} `sql:"groups_users"`
 }
 
 // ModelName outputs this model's name
@@ -98,5 +106,35 @@ func (s *GroupQueryStrategy) Upsert(m core.Model) error {
 			?description,
 			?image_url)`).
 		Insert()
+	return err
+}
+
+// UpsertRelationship upserts a group relationship
+func (s *GroupQueryStrategy) UpsertRelationship(e core.Entity, relation string) error {
+	var dbModel core.Entity
+	var query *orm.Query
+	switch relation {
+	case "group_membership":
+		dbModel = &groupMembership{
+			GroupMembership: *e.(*core.GroupMembership),
+		}
+		query = s.DB.Model(dbModel).
+			OnConflict("(group_id, user_id) DO UPDATE").
+			Set(`(
+				group_id,
+				user_id,
+				role_id,
+				status
+			) = (
+				?group_id,
+				?user_id,
+				?role_id,
+				?status
+			)`)
+	default:
+		return fmt.Errorf("Unknown relation for group: %s", relation)
+	}
+
+	_, err := query.Insert()
 	return err
 }

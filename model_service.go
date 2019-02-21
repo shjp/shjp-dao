@@ -77,3 +77,8 @@ func (s *ModelService) HandleSearch(w http.ResponseWriter, r *http.Request) {
 func (s *ModelService) HandleUpsert(m core.Model) error {
 	return s.QueryStrategy.Upsert(m)
 }
+
+// HandleUpsertRelationship handles upsert request for relationship
+func (s *ModelService) HandleUpsertRelationship(e core.Entity, relation string) error {
+	return s.QueryStrategy.UpsertRelationship(e, relation)
+}

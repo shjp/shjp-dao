@@ -110,3 +110,8 @@ func (s *EventQueryStrategy) Upsert(m core.Model) error {
 		Insert(m)
 	return err
 }
+
+// UpsertRelationship upserts an event relationship
+func (s *EventQueryStrategy) UpsertRelationship(e core.Entity, relation string) error {
+	return nil
+}
