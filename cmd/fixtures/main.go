@@ -9,7 +9,7 @@ import (
 	"github.com/go-pg/pg"
 	"github.com/joho/godotenv"
 
-	"github.com/shjp/shjp-dao"
+	"github.com/shjp/shjp-dao/postgres"
 )
 
 // Order matters here..
@@ -60,7 +60,7 @@ func main() {
 	dbName := envVars["DB"]
 	password := envVars["PASSWORD"]
 
-	db := dao.Init(&pg.Options{
+	db := postgres.Init(&pg.Options{
 		Addr:     addr,
 		Password: password,
 		User:     user,

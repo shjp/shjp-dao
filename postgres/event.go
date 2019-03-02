@@ -71,8 +71,12 @@ func (s *EventQueryStrategy) Search(payload []byte) ([]core.Model, error) {
 		query = query.Where("name ilike ?", "%"+params.Name+"%")
 	}
 
-	if params.Date != nil {
-		query = query.Where("date = ?", *params.Date)
+	if params.Start != nil {
+		query = query.Where("start = ?", *params.Start)
+	}
+
+	if params.End != nil {
+		query = query.Where("end = ?", *params.End)
 	}
 
 	if err := query.Select(); err != nil {
@@ -93,7 +97,8 @@ func (s *EventQueryStrategy) Upsert(m core.Model) error {
 		OnConflict("(id) DO UPDATE").
 		Set(`(
 			name,
-			length,
+			start,
+			end,
 			deadline,
 			allow_maybe,
 			description,
@@ -101,7 +106,8 @@ func (s *EventQueryStrategy) Upsert(m core.Model) error {
 			location_description
 		) = (
 			?name,
-			?length,
+			?start,
+			?end,
 			?deadline,
 			?allow_maybe,
 			?description,

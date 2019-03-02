@@ -31,8 +31,8 @@ CREATE TABLE users (
 CREATE TABLE events (
   id UUID PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
-  date TIMESTAMP,
-  length INT,
+  start TIMESTAMP,
+  "end" TIMESTAMP,
   creator UUID NOT NULL REFERENCES users (id),
   deadline TIMESTAMP,
   allow_maybe BOOLEAN NOT NULL,
