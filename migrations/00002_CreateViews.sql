@@ -33,11 +33,22 @@ CREATE VIEW announcements_full AS
 
 -- select events
 CREATE VIEW events_full AS
+  WITH rsvps AS (
+    SELECT
+      row_to_json(users.*) AS user,
+      ue.event_id AS event_id,
+      ue.rsvp AS rsvp
+    FROM users
+    INNER JOIN users_events AS ue ON ue.user_id = users.id
+  )
   SELECT
     events.*,
-    row_to_json(users) AS author
+    row_to_json(users) AS author,
+    COALESCE(json_agg(rsvps) FILTER (WHERE rsvps.event_id IS NOT NULL)) AS rsvps
   FROM events
-  INNER JOIN users ON events.creator = users.id;
+  LEFT JOIN rsvps ON rsvps.event_id = events.id
+  LEFT JOIN users ON events.creator = users.id
+  GROUP BY events.id, users.id;
 
 -- select groups
 CREATE VIEW groups_full AS

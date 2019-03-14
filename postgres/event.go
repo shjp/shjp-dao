@@ -2,8 +2,10 @@ package postgres
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
 	"github.com/pkg/errors"
 	core "github.com/shjp/shjp-core"
 	"github.com/shjp/shjp-core/model"
@@ -18,6 +20,12 @@ type event struct {
 	model.Event
 
 	tableName struct{} `sql:"select:events_full"`
+}
+
+type eventRSVP struct {
+	core.EventRSVP
+
+	tableName struct{} `sql:"users_events"`
 }
 
 // ModelName outputs this model's name
@@ -119,5 +127,28 @@ func (s *EventQueryStrategy) Upsert(m core.Model) error {
 
 // UpsertRelationship upserts an event relationship
 func (s *EventQueryStrategy) UpsertRelationship(e core.Entity, relation string) error {
-	return nil
+	var dbModel core.Entity
+	var query *orm.Query
+	switch relation {
+	case "event_rsvp":
+		dbModel = &eventRSVP{
+			EventRSVP: *e.(*core.EventRSVP),
+		}
+		query = s.DB.Model(dbModel).
+			OnConflict("(event_id, user_id) DO UPDATE").
+			Set(`(
+				event_id,
+				user_id,
+				rsvp
+			) = (
+				?event_id,
+				?user_id,
+				?rsvp
+			)`)
+	default:
+		return fmt.Errorf("Unknown relation for event: %s", relation)
+	}
+
+	_, err := query.Insert()
+	return err
 }

@@ -116,6 +116,8 @@ func (s *AsyncService) handleRelationshipMessage(msg *core.Message) error {
 	switch msg.Subtype {
 	case "group_membership":
 		serviceName = "group"
+	case "event_rsvp":
+		serviceName = "event"
 	default:
 		return fmt.Errorf("Cannot handle relationship message with unknown subtype: %s", msg.Subtype)
 	}

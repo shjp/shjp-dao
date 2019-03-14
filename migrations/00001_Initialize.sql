@@ -38,7 +38,9 @@ CREATE TABLE events (
   allow_maybe BOOLEAN NOT NULL,
   description TEXT,
   location POINT,
-  location_description TEXT
+  location_description TEXT,
+  created TIMESTAMP NOT NULL DEFAULT now(),
+  updated TIMESTAMP
 );
 
 CREATE TABLE announcements (
@@ -81,12 +83,16 @@ CREATE TABLE groups_announcements (
   announcement_id UUID NOT NULL REFERENCES announcements (id)
 );
 
+CREATE UNIQUE INDEX groups_announcements_index ON groups_announcements (group_id, announcement_id);
+
 CREATE TABLE users_events (
   user_id UUID NOT NULL REFERENCES users (id),
   event_id UUID NOT NULL REFERENCES events (id),
   rsvp VARCHAR(10) NOT NULL
     CHECK(rsvp IN ('yes', 'no', 'maybe', 'unanswered'))
 );
+
+CREATE UNIQUE INDEX users_events_index ON users_events (user_id, event_id);
 
 -- +goose Down
 -- SQL in this section is executed when the migration is rolled back.
