@@ -92,8 +92,8 @@ func (s *AnnouncementQueryStrategy) Upsert(m core.Model) error {
 	_, err := s.DB.Model(m).
 		OnConflict("(id) DO UPDATE").
 		Set(`(
-			name,
-			content
+			"name",
+			"content"
 		) = (
 			?name,
 			?content)`).

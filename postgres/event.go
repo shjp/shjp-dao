@@ -104,14 +104,14 @@ func (s *EventQueryStrategy) Upsert(m core.Model) error {
 	_, err := s.DB.Model(m).
 		OnConflict("(id) DO UPDATE").
 		Set(`(
-			name,
-			start,
-			end,
-			deadline,
-			allow_maybe,
-			description,
-			location,
-			location_description
+			"name",
+			"start",
+			"end",
+			"deadline",
+			"allow_maybe",
+			"description",
+			"location",
+			"location_description"
 		) = (
 			?name,
 			?start,

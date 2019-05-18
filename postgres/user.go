@@ -108,14 +108,14 @@ func (s *UserQueryStrategy) Upsert(m core.Model) error {
 	_, err := s.DB.Model(m).
 		OnConflict("(id) DO UPDATE").
 		Set(`(
-			name,
-			email,
-			baptismal_name,
-			birthday,
-			feastday,
-			last_active,
-			account_type,
-			account_secret
+			"name",
+			"email",
+			"baptismal_name",
+			"birthday",
+			"feastday",
+			"last_active",
+			"account_type",
+			"account_secret"
 		) = (
 			?name,
 			?email,

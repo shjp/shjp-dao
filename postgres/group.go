@@ -98,9 +98,9 @@ func (s *GroupQueryStrategy) Upsert(m core.Model) error {
 	_, err := s.DB.Model(m).
 		OnConflict("(id) DO UPDATE").
 		Set(`(
-			name,
-			description,
-			image_url
+			"name",
+			"description",
+			"image_url"
 		) = (
 			?name,
 			?description,
@@ -121,10 +121,10 @@ func (s *GroupQueryStrategy) UpsertRelationship(e core.Entity, relation string) 
 		query = s.DB.Model(dbModel).
 			OnConflict("(group_id, user_id) DO UPDATE").
 			Set(`(
-				group_id,
-				user_id,
-				role_id,
-				status
+				"group_id",
+				"user_id",
+				"role_id",
+				"status"
 			) = (
 				?group_id,
 				?user_id,
