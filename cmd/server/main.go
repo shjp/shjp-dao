@@ -76,7 +76,8 @@ func main() {
 		announcementService,
 		eventService,
 		groupService,
-		userService)
+		userService,
+		roleService)
 	if err != nil {
 		panic(err)
 	}
