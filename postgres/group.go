@@ -8,7 +8,7 @@ import (
 	"github.com/go-pg/pg/orm"
 	"github.com/pkg/errors"
 
-	"github.com/shjp/shjp-core"
+	core "github.com/shjp/shjp-core"
 	"github.com/shjp/shjp-core/model"
 )
 

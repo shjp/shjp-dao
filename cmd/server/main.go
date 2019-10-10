@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/go-pg/pg"
 	"github.com/gorilla/mux"
@@ -37,14 +36,7 @@ func main() {
 	})
 
 	// Log queries
-	db.OnQueryProcessed(func(event *pg.QueryProcessedEvent) {
-		query, err := event.FormattedQuery()
-		if err != nil {
-			panic(err)
-		}
-
-		log.Printf("%s %s", time.Since(event.StartTime), query)
-	})
+	db.AddQueryHook(postgres.Logger{})
 
 	/**
 	 *	REST endpoints are used for query requests
@@ -54,6 +46,7 @@ func main() {
 	eventService := dao.NewModelService(&postgres.EventQueryStrategy{DB: db})
 	groupService := dao.NewModelService(&postgres.GroupQueryStrategy{DB: db})
 	userService := dao.NewModelService(&postgres.UserQueryStrategy{DB: db})
+	roleService := dao.NewModelService(&postgres.RoleQueryStrategy{DB: db})
 
 	r := mux.NewRouter()
 	r.Path("/announcements").HandlerFunc(announcementService.HandleGetAll)
@@ -68,6 +61,9 @@ func main() {
 	r.Path("/users").HandlerFunc(userService.HandleGetAll)
 	r.Path("/users/search").HandlerFunc(userService.HandleSearch)
 	r.Path("/users/{id}").HandlerFunc(userService.HandleGetOne)
+	r.Path("/roles").HandlerFunc(roleService.HandleGetAll)
+	r.Path("/roles/search").HandlerFunc(roleService.HandleSearch)
+	r.Path("/roles/{id}").HandlerFunc(roleService.HandleGetOne)
 
 	/**
 	 * Subscrbies for mutation requests
