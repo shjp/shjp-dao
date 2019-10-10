@@ -55,7 +55,10 @@ func (s *GroupQueryStrategy) GetAll() ([]core.Model, error) {
 func (s *GroupQueryStrategy) GetOne(id string) (core.Model, error) {
 	var g group
 	g.ID = id
-	if err := s.DB.Model(&g).WherePK().First(); err != nil {
+	if err := s.DB.Model(&g).
+		WherePK().
+		Column("*").
+		First(); err != nil {
 		return nil, err
 	}
 
