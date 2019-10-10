@@ -38,7 +38,7 @@ func (s *GroupQueryStrategy) ModelName() string {
 func (s *GroupQueryStrategy) GetAll() ([]core.Model, error) {
 	groups := make([]*group, 0)
 
-	err := s.DB.Model(&groups).Select()
+	err := s.DB.Model(&groups).Column("*").Select()
 	if err != nil {
 		return nil, err
 	}
