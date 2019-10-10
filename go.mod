@@ -7,7 +7,7 @@ require (
 	github.com/gorilla/mux v1.7.3
 	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.8.1
-	github.com/shjp/shjp-core v1.1.0
+	github.com/shjp/shjp-core v1.1.1
 	github.com/shjp/shjp-queue v1.0.0
 	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271 // indirect
 	golang.org/x/crypto v0.0.0-20191002192127-34f69633bfdc

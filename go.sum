@@ -33,6 +33,8 @@ github.com/shjp/shjp-core v1.0.1-0.20190727031054-295b84c9bd6f h1:Hiz5gKQ9iAtNkk
 github.com/shjp/shjp-core v1.0.1-0.20190727031054-295b84c9bd6f/go.mod h1:HRuygEIHSRUQgxgdJp+wD9ggu1T2FQsCIGlngU2o2pg=
 github.com/shjp/shjp-core v1.1.0 h1:9SgNoxpgtsq7L7bf01Q0X9rRZhcaX42MuQmqsPbQ+eo=
 github.com/shjp/shjp-core v1.1.0/go.mod h1:HRuygEIHSRUQgxgdJp+wD9ggu1T2FQsCIGlngU2o2pg=
+github.com/shjp/shjp-core v1.1.1 h1:AiBcoC8hraBEUPSEtZvWNu2BL0W7DsvAeUyK/nlZZe8=
+github.com/shjp/shjp-core v1.1.1/go.mod h1:HRuygEIHSRUQgxgdJp+wD9ggu1T2FQsCIGlngU2o2pg=
 github.com/shjp/shjp-queue v1.0.0 h1:tiuJGaPYT7gyXUp9FRheik73mLjBnOXddXV4EFPmQQM=
 github.com/shjp/shjp-queue v1.0.0/go.mod h1:LjIfsAX7pVk0RzS+3TVALjATVHMjg7JkjFW/+Wn14/w=
 github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271 h1:WhxRHzgeVGETMlmVfqhRn8RIeeNoPr2Czh33I4Zdccw=
