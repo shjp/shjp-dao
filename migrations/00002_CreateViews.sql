@@ -62,7 +62,7 @@ CREATE VIEW groups_full AS
       || jsonb_build_object(
         'status', gu.status)
     ) FILTER (WHERE users.id IS NOT NULL), '[]') AS members,
-    COALESCE(json_agg(roles) FILTER (WHERE roles IS NOT NULL), '[]') AS roles
+    COALESCE(json_agg(DISTINCT roles) FILTER (WHERE roles IS NOT NULL), '[]') AS roles
   FROM groups
   LEFT JOIN groups_users AS gu ON gu.group_id = groups.id
   LEFT JOIN users ON users.id = gu.user_id
