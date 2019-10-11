@@ -62,6 +62,8 @@ func (s *GroupQueryStrategy) GetOne(id string) (core.Model, error) {
 		return nil, err
 	}
 
+	g.PopulateRolesPermissions()
+
 	return &g, nil
 }
 
