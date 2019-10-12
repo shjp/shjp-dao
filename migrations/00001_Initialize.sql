@@ -67,8 +67,7 @@ CREATE TABLE groups_users (
   user_id UUID NOT NULL REFERENCES users (id),
   group_id UUID NOT NULL REFERENCES groups (id),
   role_id UUID REFERENCES roles (id),
-  status VARCHAR(20) NOT NULL
-    CHECK(status IN ('accepted', 'pending'))
+  status TEXT NOT NULL
 );
 
 CREATE UNIQUE INDEX group_user_index ON groups_users (user_id, group_id);

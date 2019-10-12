@@ -54,11 +54,11 @@ CREATE VIEW events_full AS
 CREATE VIEW groups_full AS
   SELECT
     groups.*,
-    COALESCE(json_agg(
+    COALESCE(json_agg(DISTINCT
       to_jsonb(users)
       || jsonb_build_object(
-        'role_name', roles.name,
-        'privilege', roles.privilege)
+        'role_name', user_roles.name,
+        'privilege', user_roles.privilege)
       || jsonb_build_object(
         'status', gu.status)
     ) FILTER (WHERE users.id IS NOT NULL), '[]') AS members,
@@ -66,7 +66,8 @@ CREATE VIEW groups_full AS
   FROM groups
   LEFT JOIN groups_users AS gu ON gu.group_id = groups.id
   LEFT JOIN users ON users.id = gu.user_id
-  LEFT JOIN roles ON roles.id = gu.role_id
+  LEFT JOIN roles AS user_roles ON user_roles.id = gu.role_id
+  LEFT JOIN roles ON roles.group_id = groups.id
   GROUP BY groups.id;
 
 -- +goose Down
