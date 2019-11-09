@@ -14,7 +14,9 @@ func handleLambdaEvent(handler http.HandlerFunc, event events.APIGatewayProxyReq
 		return nil, errors.Wrap(err, "error converting lambda event to http request")
 	}
 
-	w := respWriter{}
+	w := respWriter{
+		header: make(http.Header),
+	}
 
 	handler(&w, r)
 
