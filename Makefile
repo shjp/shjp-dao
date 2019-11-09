@@ -54,3 +54,9 @@ db_remote_down:
 
 local:
 	./env.sh && cd cmd/server && go run main.go
+
+build-functions:
+	mkdir -p functions
+	go get ./...
+	go clean -cache
+	go build -o functions/dao ./cmd/netlify-function
