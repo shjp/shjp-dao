@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 .PHONY: all db_clean
 
 db_clean:
@@ -42,5 +44,13 @@ server:
 server_win:
 	@go run cmd/server/main.go --host=`docker-machine.exe ip`
 
+db_remote_up:
+	@source env.sh
+	@goose -dir migrations postgres "user=${SHJP_DB_USER} password=${SHJP_DB_PASSWORD} host=${SHJP_DB_HOST} port=${SHJP_DB_PORT} dbname=${SHJP_DB_DATABASE}" up
+
+db_remote_down:
+	@source env.sh
+	@goose -dir migrations postgres "user=${SHJP_DB_USER} password=${SHJP_DB_PASSWORD} host=${SHJP_DB_HOST} port=${SHJP_DB_PORT} dbname=${SHJP_DB_DATABASE}" down
+
 local:
-	cd cmd/server && go run main.go
+	./env.sh && cd cmd/server && go run main.go

@@ -2,12 +2,12 @@ package main
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/go-pg/pg"
-	"github.com/joho/godotenv"
 
 	"github.com/shjp/shjp-dao/postgres"
 )
@@ -50,21 +50,19 @@ func insert(tx *pg.Tx, table string) error {
 }
 
 func main() {
-	envVars, err := godotenv.Read()
-	if err != nil {
-		panic(err)
-	}
-
-	addr := envVars["ADDR"]
-	user := envVars["USER"]
-	dbName := envVars["DB"]
-	password := envVars["PASSWORD"]
+	addr := os.Getenv("SHJP_DB_HOST") + ":" + os.Getenv("SHJP_DB_PORT")
+	user := os.Getenv("SHJP_DB_USER")
+	dbName := os.Getenv("SHJP_DB_DATABASE")
+	password := os.Getenv("SHJP_DB_PASSWORD")
 
 	db := postgres.Init(&pg.Options{
 		Addr:     addr,
 		Password: password,
 		User:     user,
 		Database: dbName,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
 	})
 
 	tx, err := db.Begin()

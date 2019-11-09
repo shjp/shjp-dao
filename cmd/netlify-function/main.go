@@ -2,32 +2,42 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"log"
-	"net/http"
 	"os"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/go-pg/pg"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 
 	dao "github.com/shjp/shjp-dao"
 	"github.com/shjp/shjp-dao/postgres"
 )
 
 func main() {
-	envVars, err := godotenv.Read()
+	lambda.Start(handler)
+}
+
+func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
+	reqBlob, err := json.Marshal(request)
 	if err != nil {
-		panic(err)
+		log.Println("Marshalling request failed:", err)
 	}
+	log.Println("Request object ---------------------------------------------------")
+	log.Println(string(reqBlob))
+	log.Println("------------------------------------------------------------------")
+
+	// authToken, ok := request.Headers["auth-token"]
+	// // For time being, simply log and pass an empty string when auth token is not found
+	// if !ok {
+	// 	log.Println("Auth token not found")
+	// }
 
 	addr := os.Getenv("SHJP_DB_HOST") + ":" + os.Getenv("SHJP_DB_PORT")
 	user := os.Getenv("SHJP_DB_USER")
 	dbName := os.Getenv("SHJP_DB_DATABASE")
 	password := os.Getenv("SHJP_DB_PASSWORD")
-
-	queueHost := envVars["QUEUE_URL"]
-	queueUser := envVars["QUEUE_USER"]
-	queueExchange := envVars["QUEUE_EXCHANGE"]
 
 	log.Print("Initializing DB client...")
 	db := postgres.Init(&pg.Options{
@@ -42,10 +52,6 @@ func main() {
 
 	// Log queries
 	db.AddQueryHook(postgres.Logger{})
-
-	/**
-	 *	REST endpoints are used for query requests
-	 */
 
 	announcementService := dao.NewModelService(&postgres.AnnouncementQueryStrategy{DB: db})
 	eventService := dao.NewModelService(&postgres.EventQueryStrategy{DB: db})
@@ -70,26 +76,5 @@ func main() {
 	r.Path("/roles/search").HandlerFunc(roleService.HandleSearch)
 	r.Path("/roles/{id}").HandlerFunc(roleService.HandleGetOne)
 
-	/**
-	 * Subscrbies for mutation requests
-	 */
-
-	asyncService, err := dao.NewAsyncService(
-		queueHost,
-		queueUser,
-		queueExchange,
-		announcementService,
-		eventService,
-		groupService,
-		userService,
-		roleService)
-	if err != nil {
-		panic(err)
-	}
-	if err = asyncService.Listen(); err != nil {
-		panic(err)
-	}
-
-	log.Println("Server listening on port 8200") //
-	log.Fatal(http.ListenAndServe(":8200", r))
+	return handleLambdaEvent(r.ServeHTTP, request)
 }

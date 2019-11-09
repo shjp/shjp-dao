@@ -1,12 +1,14 @@
 module github.com/shjp/shjp-dao
 
 require (
+	github.com/aws/aws-lambda-go v1.13.2
 	github.com/go-pg/pg v8.0.6+incompatible
 	github.com/go-pg/pg/v9 v9.0.0-beta.15
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/joho/godotenv v1.3.0
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/mattn/go-sqlite3 v1.11.0 // indirect
 	github.com/pkg/errors v0.8.1
