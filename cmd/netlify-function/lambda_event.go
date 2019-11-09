@@ -8,8 +8,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const baseURL = "/.netlify/functions/dao"
+
 func handleLambdaEvent(handler http.HandlerFunc, event events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-	r, err := http.NewRequest(event.HTTPMethod, event.Path, strings.NewReader(event.Body))
+	r, err := http.NewRequest(event.HTTPMethod, strings.TrimPrefix(event.Path, baseURL), strings.NewReader(event.Body))
 	if err != nil {
 		return nil, errors.Wrap(err, "error converting lambda event to http request")
 	}
