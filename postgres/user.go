@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/shjp/shjp-core"
+	core "github.com/shjp/shjp-core"
 	"github.com/shjp/shjp-core/model"
 )
 
@@ -19,7 +19,7 @@ type UserQueryStrategy struct {
 type user struct {
 	model.User
 
-	tableName struct{} `sql:"select:users_full"`
+	tableName struct{} `pg:"select:users_full"`
 }
 
 // ModelName outputs this model's name

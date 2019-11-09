@@ -19,13 +19,13 @@ type EventQueryStrategy struct {
 type event struct {
 	model.Event
 
-	tableName struct{} `sql:"select:events_full"`
+	tableName struct{} `pg:"select:events_full"`
 }
 
 type eventRSVP struct {
 	core.EventRSVP
 
-	tableName struct{} `sql:"users_events"`
+	tableName struct{} `pg:"users_events"`
 }
 
 // ModelName outputs this model's name

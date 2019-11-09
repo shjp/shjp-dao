@@ -20,13 +20,13 @@ type GroupQueryStrategy struct {
 type group struct {
 	model.Group
 
-	tableName struct{} `sql:"select:groups_full"`
+	tableName struct{} `pg:"select:groups_full"`
 }
 
 type groupMembership struct {
 	core.GroupMembership
 
-	tableName struct{} `sql:"groups_users"`
+	tableName struct{} `pg:"groups_users"`
 }
 
 // ModelName outputs this model's name

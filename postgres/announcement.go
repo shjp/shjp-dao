@@ -17,7 +17,7 @@ type AnnouncementQueryStrategy struct {
 type announcement struct {
 	model.Announcement
 
-	tableName struct{} `sql:"select:announcements_full"`
+	tableName struct{} `pg:"select:announcements_full"`
 }
 
 // ModelName outputs this model's name
