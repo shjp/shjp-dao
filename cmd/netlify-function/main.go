@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -61,9 +60,6 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	roleService := dao.NewModelService(&postgres.RoleQueryStrategy{DB: db})
 
 	r := mux.NewRouter()
-	r.Use(func(w http.ResponseWriter, r *http.Request) {
-
-	})
 	r.Path("/announcements").HandlerFunc(announcementService.HandleGetAll)
 	r.Path("/announcements/search").HandlerFunc(announcementService.HandleSearch)
 	r.Path("/announcements/{id}").HandlerFunc(announcementService.HandleGetOne)
