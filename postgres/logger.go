@@ -1,15 +1,22 @@
 package postgres
 
 import (
+	"context"
 	"log"
 
 	"github.com/go-pg/pg"
 )
 
-type Logger struct {}
+// Logger is the logger plugin for pg
+type Logger struct{}
 
-func (Logger) BeforeQuery(q *pg.QueryEvent) {
+// BeforeQuery implements pg.QueryHook
+func (Logger) BeforeQuery(c context.Context, q *pg.QueryEvent) (context.Context, error) {
 	log.Println(q.FormattedQuery())
+	return c, nil
 }
 
-func (Logger) AfterQuery(q *pg.QueryEvent) {}
+// AfterQuery implements pg.QueryHook
+func (Logger) AfterQuery(c context.Context, q *pg.QueryEvent) error {
+	return nil
+}
