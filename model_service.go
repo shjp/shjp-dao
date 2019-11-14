@@ -86,6 +86,9 @@ func (s *ModelService) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, fmt.Sprintf("Error deserializing '%s' model payload: %s", s.ModelName(), err))
 		return
 	}
+
+	m.GenerateID()
+
 	if err = s.HandleUpsert(m); err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error upserting '%s' model: %s", s.ModelName(), err))
 		return
