@@ -10,7 +10,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	core "github.com/shjp/shjp-core"
-	"github.com/shjp/shjp-core/model"
 )
 
 // ModelService is the http handler function factory for models
@@ -107,15 +106,15 @@ func (s *ModelService) read(b []byte) (core.Model, error) {
 	var m core.Model
 	switch s.ModelName() {
 	case "announcement":
-		m = &model.Announcement{}
+		m = &core.Announcement{}
 	case "event":
-		m = &model.Event{}
+		m = &core.Event{}
 	case "group":
-		m = &model.Group{}
+		m = &core.Group{}
 	case "role":
-		m = &model.Role{}
+		m = &core.Role{}
 	case "user":
-		m = &model.User{}
+		m = &core.User{}
 	}
 	if err := json.Unmarshal(b, m); err != nil {
 		return nil, errors.Wrap(err, "error unmarshalling model")
