@@ -93,6 +93,14 @@ func (s *ModelService) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, fmt.Sprintf("Error upserting '%s' model: %s", s.ModelName(), err))
 		return
 	}
+
+	resp, err := json.Marshal(m)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf("Error marshalling '%s' model: %s", s.ModelName(), err))
+		return
+	}
+
+	fmt.Fprintf(w, string(resp))
 }
 
 // HandleUpsert handles upsert request
