@@ -80,9 +80,10 @@ func (s *ModelService) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, fmt.Sprintf("Error reading body for HandleRestUpsert"))
 		return
 	}
+	fmt.Println("payload:", string(payload))
 	var model core.Model
 	if err = json.Unmarshal(payload, model); err != nil {
-		fmt.Fprintf(w, fmt.Sprintf("Error serializing '%s' model payload: %s", s.ModelName(), err))
+		fmt.Fprintf(w, fmt.Sprintf("Error deserializing '%s' model payload: %s", s.ModelName(), err))
 		return
 	}
 	if err = s.HandleUpsert(model); err != nil {
