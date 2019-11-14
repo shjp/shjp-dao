@@ -60,21 +60,68 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	roleService := dao.NewModelService(&postgres.RoleQueryStrategy{DB: db})
 
 	r := mux.NewRouter()
-	r.Path("/announcements").HandlerFunc(announcementService.HandleGetAll)
-	r.Path("/announcements/search").HandlerFunc(announcementService.HandleSearch)
-	r.Path("/announcements/{id}").HandlerFunc(announcementService.HandleGetOne)
-	r.Path("/events").HandlerFunc(eventService.HandleGetAll)
-	r.Path("/events/search").HandlerFunc(eventService.HandleSearch)
-	r.Path("/events/{id}").HandlerFunc(eventService.HandleGetOne)
-	r.Path("/groups").HandlerFunc(groupService.HandleGetAll)
-	r.Path("/groups/search").HandlerFunc(groupService.HandleSearch)
-	r.Path("/groups/{id}").HandlerFunc(groupService.HandleGetOne)
-	r.Path("/users").HandlerFunc(userService.HandleGetAll)
-	r.Path("/users/search").HandlerFunc(userService.HandleSearch)
-	r.Path("/users/{id}").HandlerFunc(userService.HandleGetOne)
-	r.Path("/roles").HandlerFunc(roleService.HandleGetAll)
-	r.Path("/roles/search").HandlerFunc(roleService.HandleSearch)
-	r.Path("/roles/{id}").HandlerFunc(roleService.HandleGetOne)
+
+	r.Path("/announcements").
+		Methods("GET").
+		HandlerFunc(announcementService.HandleGetAll)
+	r.Path("/announcements/search").
+		Methods("GET").
+		HandlerFunc(announcementService.HandleSearch)
+	r.Path("/announcements/{id}").
+		Methods("GET").
+		HandlerFunc(announcementService.HandleGetOne)
+	r.Path("/announcements").
+		Methods("POST").
+		HandlerFunc(announcementService.HandleCreate)
+
+	r.Path("/events").
+		Methods("GET").
+		HandlerFunc(eventService.HandleGetAll)
+	r.Path("/events/search").
+		Methods("GET").
+		HandlerFunc(eventService.HandleSearch)
+	r.Path("/events/{id}").
+		Methods("GET").
+		HandlerFunc(eventService.HandleGetOne)
+
+	r.Path("/groups").
+		Methods("GET").
+		HandlerFunc(groupService.HandleGetAll)
+	r.Path("/groups/search").
+		Methods("GET").
+		HandlerFunc(groupService.HandleSearch)
+	r.Path("/groups/{id}").
+		Methods("GET").
+		HandlerFunc(groupService.HandleGetOne)
+	r.Path("/groups").
+		Methods("POST").
+		HandlerFunc(groupService.HandleCreate)
+
+	r.Path("/users").
+		Methods("GET").
+		HandlerFunc(userService.HandleGetAll)
+	r.Path("/users/search").
+		Methods("GET").
+		HandlerFunc(userService.HandleSearch)
+	r.Path("/users/{id}").
+		Methods("GET").
+		HandlerFunc(userService.HandleGetOne)
+	r.Path("/groups").
+		Methods("POST").
+		HandlerFunc(userService.HandleCreate)
+
+	r.Path("/roles").
+		Methods("GET").
+		HandlerFunc(roleService.HandleGetAll)
+	r.Path("/roles/search").
+		Methods("GET").
+		HandlerFunc(roleService.HandleSearch)
+	r.Path("/roles/{id}").
+		Methods("GET").
+		HandlerFunc(roleService.HandleGetOne)
+	r.Path("/roles").
+		Methods("POST").
+		HandlerFunc(roleService.HandleCreate)
 
 	return handleLambdaEvent(r.ServeHTTP, request)
 }

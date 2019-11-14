@@ -73,6 +73,24 @@ func (s *ModelService) HandleSearch(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(bytes))
 }
 
+// HandleRestUpsert handles the REST API request to upsert the model object
+func (s *ModelService) HandleRestUpsert(w http.ResponseWriter, r *http.Request) {
+	payload, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, fmt.Sprintf("Error reading body for HandleRestUpsert"))
+		return
+	}
+	var model core.Model
+	if err = json.Unmarshal(payload, model); err != nil {
+		fmt.Fprintf(w, fmt.Sprintf("Error serializing '%s' model payload: %s", s.ModelName(), err))
+		return
+	}
+	if err = s.HandleUpsert(model); err != nil {
+		fmt.Fprintf(w, fmt.Sprintf("Error upserting '%s' model: %s", s.ModelName(), err))
+		return
+	}
+}
+
 // HandleUpsert handles upsert request
 func (s *ModelService) HandleUpsert(m core.Model) error {
 	return s.QueryStrategy.Upsert(m)
