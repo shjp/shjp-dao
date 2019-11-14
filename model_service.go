@@ -73,8 +73,8 @@ func (s *ModelService) HandleSearch(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(bytes))
 }
 
-// HandleRestUpsert handles the REST API request to upsert the model object
-func (s *ModelService) HandleRestUpsert(w http.ResponseWriter, r *http.Request) {
+// HandleCreate handles the REST API request to create the model object
+func (s *ModelService) HandleCreate(w http.ResponseWriter, r *http.Request) {
 	payload, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error reading body for HandleRestUpsert"))
