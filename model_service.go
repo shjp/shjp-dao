@@ -8,7 +8,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	core "github.com/shjp/shjp-core"
+	"github.com/shjp/shjp-core/model"
 )
 
 // ModelService is the http handler function factory for models
@@ -24,12 +26,12 @@ func NewModelService(queryStrategy QueryStrategy) *ModelService {
 
 // HandleGetAll handles get all request
 func (s *ModelService) HandleGetAll(w http.ResponseWriter, r *http.Request) {
-	models, err := s.QueryStrategy.GetAll()
+	ms, err := s.QueryStrategy.GetAll()
 	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error getting '%s' all models: %s", s.ModelName(), err))
 		return
 	}
-	bytes, err := json.Marshal(models)
+	bytes, err := json.Marshal(ms)
 	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error serializing '%s' models: %s", s.ModelName(), err))
 		return
@@ -40,12 +42,12 @@ func (s *ModelService) HandleGetAll(w http.ResponseWriter, r *http.Request) {
 // HandleGetOne handles get one request
 func (s *ModelService) HandleGetOne(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	model, err := s.QueryStrategy.GetOne(id)
+	m, err := s.QueryStrategy.GetOne(id)
 	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error getting '%s' one model: %s", s.ModelName(), err))
 		return
 	}
-	bytes, err := json.Marshal(model)
+	bytes, err := json.Marshal(m)
 	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error serializing '%s' one model: %s", s.ModelName(), err))
 		return
@@ -60,12 +62,12 @@ func (s *ModelService) HandleSearch(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, fmt.Sprintf("Error reading body for HandleFind"))
 		return
 	}
-	models, err := s.QueryStrategy.Search(payload)
+	ms, err := s.QueryStrategy.Search(payload)
 	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error finding '%s' models: %s", s.ModelName(), err))
 		return
 	}
-	bytes, err := json.Marshal(models)
+	bytes, err := json.Marshal(ms)
 	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error serializing '%s' models: %s", s.ModelName(), err))
 		return
@@ -80,13 +82,12 @@ func (s *ModelService) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, fmt.Sprintf("Error reading body for HandleRestUpsert"))
 		return
 	}
-	fmt.Println("payload:", string(payload))
-	var model core.Model
-	if err = json.Unmarshal(payload, model); err != nil {
+	m, err := s.read(payload)
+	if err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error deserializing '%s' model payload: %s", s.ModelName(), err))
 		return
 	}
-	if err = s.HandleUpsert(model); err != nil {
+	if err = s.HandleUpsert(m); err != nil {
 		fmt.Fprintf(w, fmt.Sprintf("Error upserting '%s' model: %s", s.ModelName(), err))
 		return
 	}
@@ -100,4 +101,24 @@ func (s *ModelService) HandleUpsert(m core.Model) error {
 // HandleUpsertRelationship handles upsert request for relationship
 func (s *ModelService) HandleUpsertRelationship(e core.Entity, relation string) error {
 	return s.QueryStrategy.UpsertRelationship(e, relation)
+}
+
+func (s *ModelService) read(b []byte) (core.Model, error) {
+	var m core.Model
+	switch s.ModelName() {
+	case "announcement":
+		m = &model.Announcement{}
+	case "event":
+		m = &model.Event{}
+	case "group":
+		m = &model.Group{}
+	case "role":
+		m = &model.Role{}
+	case "user":
+		m = &model.User{}
+	}
+	if err := json.Unmarshal(b, m); err != nil {
+		return nil, errors.Wrap(err, "error unmarshalling model")
+	}
+	return m, nil
 }
