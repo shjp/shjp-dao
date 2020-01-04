@@ -58,6 +58,7 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	groupService := dao.NewModelService(&postgres.GroupQueryStrategy{DB: db})
 	userService := dao.NewModelService(&postgres.UserQueryStrategy{DB: db})
 	roleService := dao.NewModelService(&postgres.RoleQueryStrategy{DB: db})
+	massFileService := dao.NewModelService(&postgres.MassFileQueryStrategy{DB: db})
 
 	r := mux.NewRouter()
 
@@ -122,6 +123,10 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	r.Path("/roles").
 		Methods("POST").
 		HandlerFunc(roleService.HandleCreate)
+
+	r.Path("/mass_files").
+		Methods("GET").
+		HandlerFunc(massFileService.HandleGetAll)
 
 	return handleLambdaEvent(r.ServeHTTP, request)
 }
